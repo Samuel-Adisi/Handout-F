@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/api",
+  baseURL: "https://handout.pythonanywhere.com/api",
 });
 
 // attach token to every request
@@ -20,7 +20,7 @@ api.interceptors.response.use(
       original._retry = true;
       try {
         const refresh = localStorage.getItem("refresh");
-        const { data } = await axios.post("http://127.0.0.1:8000/api/accounts/refresh/", { refresh });
+        const { data } = await axios.post("https://handout.pythonanywhere.com/api/accounts/refresh/", { refresh });
         localStorage.setItem("access", data.access);
         original.headers.Authorization = `Bearer ${data.access}`;
         return axios(original);
