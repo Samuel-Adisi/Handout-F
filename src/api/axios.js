@@ -16,11 +16,23 @@ api.interceptors.response.use(
   (res) => res,
   async (err) => {
     const original = err.config;
+
+    // Don't intercept auth endpoints — let errors reach the component
+    if (
+      original.url.includes("/accounts/login/") ||
+      original.url.includes("/accounts/register/")
+    ) {
+      return Promise.reject(err);
+    }
+
     if (err.response?.status === 401 && !original._retry) {
       original._retry = true;
       try {
         const refresh = localStorage.getItem("refresh");
-        const { data } = await axios.post("https://handout.pythonanywhere.com/api/accounts/refresh/", { refresh });
+        const { data } = await axios.post(
+          "https://handout.pythonanywhere.com/api/accounts/refresh/",
+          { refresh }
+        );
         localStorage.setItem("access", data.access);
         original.headers.Authorization = `Bearer ${data.access}`;
         return axios(original);
