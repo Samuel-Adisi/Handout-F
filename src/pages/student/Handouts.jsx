@@ -320,7 +320,8 @@ export default function StudentHandouts() {
   // OTP state
   const [step,         setStep]         = useState("momo"); // "momo" | "otp" | "success"
   const [otp,          setOtp]          = useState("");
-  const [reference,    setReference]    = useState("");
+  const [reference,  setReference]  = useState("");
+  const [paymentId,  setPaymentId]  = useState("");
   const [submittingOtp, setSubmittingOtp] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
 
@@ -383,6 +384,8 @@ export default function StudentHandouts() {
       const nextStep = res.data?.next_step;
       const ref      = res.data?.reference;
       setReference(ref);
+      setPaymentId(res.data?.payment_id);
+
 
       if (nextStep === "send_otp") {
         // SMS OTP flow — show OTP input
@@ -408,6 +411,38 @@ export default function StudentHandouts() {
     }
   }
 
+
+
+
+  async function pollPaymentStatus(ref) {
+  setError("OTP submitted. Waiting for confirmation...");
+  let attempts = 0;
+  const maxAttempts = 10;
+
+  const interval = setInterval(async () => {
+    attempts++;
+    try {
+      const res = await api.get(`/payments/${ref}/status/`);
+      const paymentStatus = res.data?.status;
+
+      if (paymentStatus === "successful") {
+        clearInterval(interval);
+        setStep("success");
+      } else if (paymentStatus === "failed") {
+        clearInterval(interval);
+        setError("Payment failed. Please try again.");
+      } else if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        setError("Payment is taking longer than expected. Check My Payments for status.");
+      }
+    } catch (err) {
+      clearInterval(interval);
+    }
+  }, 3000);
+}
+
+
+
   // Step 2 — submit OTP
   async function handleSubmitOtp() {
     if (!otp.trim() || otp.length < 4) { setError("Please enter the OTP from your SMS."); return; }
@@ -419,11 +454,11 @@ export default function StudentHandouts() {
         reference,
       });
       const msg = res.data?.message || "";
+      // Replace:
       if (msg.includes("approved") || msg.includes("success")) {
         setStep("success");
       } else {
-        // still waiting — e.g. pay_offline
-        setError(msg || "OTP submitted. Please wait for confirmation.");
+      const res = await api.get(`/payments/${ref}/status/`);
       }
     } catch (err) {
       const errs = err.response?.data;
