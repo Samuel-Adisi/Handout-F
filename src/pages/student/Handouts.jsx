@@ -224,6 +224,47 @@ const styles = `
   .hp-field-input:focus { border-color: ${C.accent}; }
   .hp-field-input::placeholder { color: ${C.muted}; }
 
+  /* OTP input — large centered digits */
+  .hp-otp-input {
+    width: 100%; padding: 16px 14px; background: ${C.bg};
+    border: 1px solid ${C.border}; border-radius: 10px;
+    font-size: 28px; font-weight: 700; color: ${C.accent};
+    outline: none; font-family: 'DM Mono', monospace;
+    transition: border-color 0.15s; margin-bottom: 8px;
+    text-align: center; letter-spacing: 10px;
+  }
+  .hp-otp-input:focus { border-color: ${C.accent}; }
+  .hp-otp-input::placeholder { color: ${C.subtle}; font-size: 20px; letter-spacing: 6px; }
+
+  .hp-otp-hint {
+    font-size: 12px; color: ${C.muted}; text-align: center;
+    margin-bottom: 20px; line-height: 1.5;
+  }
+  .hp-otp-hint strong { color: ${C.text}; }
+
+  .hp-resend {
+    background: none; border: none; color: ${C.accent};
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: 'DM Sans', inherit; padding: 0;
+    text-decoration: underline; margin-top: 12px;
+    display: block; text-align: center; width: 100%;
+  }
+  .hp-resend:disabled { color: ${C.muted}; text-decoration: none; cursor: not-allowed; }
+
+  .hp-step-indicator {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 20px;
+  }
+  .hp-step {
+    display: flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    font-size: 11px; font-weight: 700;
+  }
+  .hp-step.done { background: ${C.accent}; color: #fff; }
+  .hp-step.active { background: ${C.accentDim}; border: 1.5px solid ${C.accent}; color: ${C.accent}; }
+  .hp-step.pending { background: ${C.bg}; border: 1.5px solid ${C.border}; color: ${C.muted}; }
+  .hp-step-line { flex: 1; height: 1px; background: ${C.border}; }
+  .hp-step-line.done { background: ${C.accent}; }
+
   .hp-alert { border-radius: 10px; padding: 11px 14px; font-size: 13px; margin-bottom: 16px; font-weight: 500; }
   .hp-alert.error { background: #2d141430; border: 1px solid ${C.error}50; color: ${C.error}; }
   .hp-alert.success { background: #052e1630; border: 1px solid #16a34a50; color: ${C.green}; }
@@ -263,6 +304,7 @@ const styles = `
   }
 `;
 
+// step: "momo" | "otp" | "success"
 export default function StudentHandouts() {
   const navigate     = useNavigate();
   const queryClient  = useQueryClient();
@@ -274,6 +316,14 @@ export default function StudentHandouts() {
   const [paying,       setPaying]       = useState(false);
   const [error,        setError]        = useState("");
   const [success,      setSuccess]      = useState("");
+
+  // OTP state
+  const [step,         setStep]         = useState("momo"); // "momo" | "otp" | "success"
+  const [otp,          setOtp]          = useState("");
+  const [reference,    setReference]    = useState("");
+  const [submittingOtp, setSubmittingOtp] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const { data: handouts = [], isLoading: loadingHandouts } = useQuery({
@@ -299,21 +349,53 @@ export default function StudentHandouts() {
     setMomoNumber(user.phone || "");
     setError("");
     setSuccess("");
+    setStep("momo");
+    setOtp("");
+    setReference("");
     setShowModal(true);
   }
 
+  function closeModal() {
+    setShowModal(false);
+    setStep("momo");
+    setOtp("");
+    setReference("");
+    setError("");
+    setSuccess("");
+  }
+
+  // mask phone number for display e.g. 024*****67
+  function maskPhone(phone) {
+    if (!phone || phone.length < 4) return phone;
+    return phone.slice(0, 3) + "*".repeat(phone.length - 5) + phone.slice(-2);
+  }
+
+  // Step 1 — initiate payment
   async function handlePay() {
     if (!momoNumber.trim()) { setError("Please enter your MoMo number."); return; }
     setPaying(true);
     setError("");
-    setSuccess("");
     try {
-      await api.post("/payments/initiate/", {
+      const res = await api.post("/payments/initiate/", {
         handout_id:  selected.id,
         momo_number: momoNumber,
       });
-      setSuccess("Payment initiated! Check your phone for a MoMo prompt.");
-      setTimeout(() => setShowModal(false), 3000);
+      const nextStep = res.data?.next_step;
+      const ref      = res.data?.reference;
+      setReference(ref);
+
+      if (nextStep === "send_otp") {
+        // SMS OTP flow — show OTP input
+        setStep("otp");
+        startResendCooldown();
+      } else if (nextStep === "success") {
+        // instant success (unlikely but handle it)
+        setStep("success");
+      } else {
+        // fallback — assume OTP needed
+        setStep("otp");
+        startResendCooldown();
+      }
     } catch (err) {
       const errs = err.response?.data;
       if (typeof errs === "object") {
@@ -321,6 +403,65 @@ export default function StudentHandouts() {
       } else {
         setError("Payment failed. Please try again.");
       }
+    } finally {
+      setPaying(false);
+    }
+  }
+
+  // Step 2 — submit OTP
+  async function handleSubmitOtp() {
+    if (!otp.trim() || otp.length < 4) { setError("Please enter the OTP from your SMS."); return; }
+    setSubmittingOtp(true);
+    setError("");
+    try {
+      const res = await api.post("/payments/submit-otp/", {
+        otp,
+        reference,
+      });
+      const msg = res.data?.message || "";
+      if (msg.includes("approved") || msg.includes("success")) {
+        setStep("success");
+      } else {
+        // still waiting — e.g. pay_offline
+        setError(msg || "OTP submitted. Please wait for confirmation.");
+      }
+    } catch (err) {
+      const errs = err.response?.data;
+      if (typeof errs === "object") {
+        setError(Object.values(errs).flat().join(" "));
+      } else {
+        setError("Invalid OTP. Please check and try again.");
+      }
+    } finally {
+      setSubmittingOtp(false);
+    }
+  }
+
+  // Resend cooldown timer
+  function startResendCooldown() {
+    setResendCooldown(30);
+    const id = setInterval(() => {
+      setResendCooldown(prev => {
+        if (prev <= 1) { clearInterval(id); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  }
+
+  async function handleResend() {
+    if (resendCooldown > 0) return;
+    setPaying(true);
+    setError("");
+    setOtp("");
+    try {
+      const res = await api.post("/payments/initiate/", {
+        handout_id:  selected.id,
+        momo_number: momoNumber,
+      });
+      setReference(res.data?.reference);
+      startResendCooldown();
+    } catch (err) {
+      setError("Could not resend OTP. Please try again.");
     } finally {
       setPaying(false);
     }
@@ -345,6 +486,24 @@ export default function StudentHandouts() {
     if (!h.in_stock) return "Out of stock";
     if (h.stock <= 10) return `${h.stock} left`;
     return `${h.stock} in stock`;
+  }
+
+  // Step indicator helper
+  function StepIndicator() {
+    const s1 = step === "momo" ? "active" : "done";
+    const s2 = step === "otp" ? "active" : step === "success" ? "done" : "pending";
+    const s3 = step === "success" ? "active" : "pending";
+    const l1 = step !== "momo" ? "done" : "";
+    const l2 = step === "success" ? "done" : "";
+    return (
+      <div className="hp-step-indicator">
+        <div className={`hp-step ${s1}`}>1</div>
+        <div className={`hp-step-line ${l1}`} />
+        <div className={`hp-step ${s2}`}>2</div>
+        <div className={`hp-step-line ${l2}`} />
+        <div className={`hp-step ${s3}`}>3</div>
+      </div>
+    );
   }
 
   return (
@@ -437,29 +596,32 @@ export default function StudentHandouts() {
           )}
         </div>
 
+        {/* ── Modal ── */}
         {showModal && selected && (
-          <div className="hp-overlay" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="hp-overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
             <div className="hp-modal">
-              <div className="hp-modal-header">
-                <div className="hp-modal-title">Complete Payment</div>
-                <div className="hp-modal-sub">Pay with Mobile Money</div>
-              </div>
-              <div className="hp-summary">
-                {[
-                  { label: "Handout", value: selected.title },
-                  { label: "Course",  value: selected.course?.code },
-                  { label: "Amount",  value: `GHS ${selected.price}`, amount: true },
-                ].map(({ label, value, amount }) => (
-                  <div key={label} className="hp-summary-row">
-                    <span className="hp-summary-label">{label}</span>
-                    <span className={`hp-summary-value${amount ? " amount" : ""}`}>{value}</span>
-                  </div>
-                ))}
-              </div>
-              {error   && <div className="hp-alert error">{error}</div>}
-              {success && <div className="hp-alert success">✓ {success}</div>}
-              {!success && (
+
+              {/* ── Step: MoMo number ── */}
+              {step === "momo" && (
                 <>
+                  <div className="hp-modal-header">
+                    <div className="hp-modal-title">Complete Payment</div>
+                    <div className="hp-modal-sub">Pay with Mobile Money</div>
+                  </div>
+                  <StepIndicator />
+                  <div className="hp-summary">
+                    {[
+                      { label: "Handout", value: selected.title },
+                      { label: "Course",  value: selected.course?.code },
+                      { label: "Amount",  value: `GHS ${selected.price}`, amount: true },
+                    ].map(({ label, value, amount }) => (
+                      <div key={label} className="hp-summary-row">
+                        <span className="hp-summary-label">{label}</span>
+                        <span className={`hp-summary-value${amount ? " amount" : ""}`}>{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {error && <div className="hp-alert error">{error}</div>}
                   <label className="hp-field-label">MoMo Number</label>
                   <input
                     className="hp-field-input"
@@ -468,13 +630,88 @@ export default function StudentHandouts() {
                     placeholder="e.g. 0241234567"
                   />
                   <div className="hp-modal-actions">
-                    <button className="hp-btn-cancel" onClick={() => setShowModal(false)}>Cancel</button>
+                    <button className="hp-btn-cancel" onClick={closeModal}>Cancel</button>
                     <button className="hp-btn-pay" onClick={handlePay} disabled={paying}>
                       {paying ? <><div className="hp-spinner" /> Processing...</> : "Pay Now"}
                     </button>
                   </div>
                 </>
               )}
+
+              {/* ── Step: OTP entry ── */}
+              {step === "otp" && (
+                <>
+                  <div className="hp-modal-header">
+                    <div className="hp-modal-title">Enter OTP</div>
+                    <div className="hp-modal-sub">Confirm your payment</div>
+                  </div>
+                  <StepIndicator />
+                  {error && <div className="hp-alert error">{error}</div>}
+                  <div className="hp-otp-hint">
+                    An OTP was sent to <strong>{maskPhone(momoNumber)}</strong> via SMS.
+                    Enter the code below to approve the payment of{" "}
+                    <strong style={{ color: C.accent }}>GHS {selected.price}</strong>.
+                  </div>
+                  <input
+                    className="hp-otp-input"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="······"
+                    maxLength={6}
+                    autoFocus
+                  />
+                  <div className="hp-modal-actions">
+                    <button className="hp-btn-cancel" onClick={closeModal}>Cancel</button>
+                    <button className="hp-btn-pay" onClick={handleSubmitOtp} disabled={submittingOtp || otp.length < 4}>
+                      {submittingOtp ? <><div className="hp-spinner" /> Verifying...</> : "Confirm Payment"}
+                    </button>
+                  </div>
+                  <button
+                    className="hp-resend"
+                    onClick={handleResend}
+                    disabled={resendCooldown > 0 || paying}
+                  >
+                    {resendCooldown > 0
+                      ? `Resend OTP in ${resendCooldown}s`
+                      : paying ? "Sending..." : "Didn't get a code? Resend"}
+                  </button>
+                </>
+              )}
+
+              {/* ── Step: Success ── */}
+              {step === "success" && (
+                <>
+                  <div className="hp-modal-header">
+                    <div className="hp-modal-title">Payment Successful 🎉</div>
+                    <div className="hp-modal-sub">Your handout has been unlocked</div>
+                  </div>
+                  <StepIndicator />
+                  <div className="hp-alert success">
+                    ✓ Payment confirmed for <strong>{selected.title}</strong>. You can now access your handout.
+                  </div>
+                  <div className="hp-summary">
+                    {[
+                      { label: "Handout", value: selected.title },
+                      { label: "Course",  value: selected.course?.code },
+                      { label: "Amount",  value: `GHS ${selected.price}`, amount: true },
+                      { label: "Status",  value: "✓ Paid" },
+                    ].map(({ label, value, amount }) => (
+                      <div key={label} className="hp-summary-row">
+                        <span className="hp-summary-label">{label}</span>
+                        <span className={`hp-summary-value${amount ? " amount" : ""}`}>{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    className="hp-btn-pay"
+                    style={{ width: "100%" }}
+                    onClick={() => { closeModal(); navigate("/student/payments"); }}
+                  >
+                    View My Payments
+                  </button>
+                </>
+              )}
+
             </div>
           </div>
         )}
