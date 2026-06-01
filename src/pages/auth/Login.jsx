@@ -33,8 +33,8 @@ export default function Login() {
   const [error, setError]     = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+   async function handleSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
     setLoading(true);
     setError("");
     try {
@@ -49,9 +49,17 @@ export default function Login() {
       if (data.role === "rep")     navigate("/rep/dashboard");
       if (data.role === "student") navigate("/student/handouts");
       if (data.role === "admin")   navigate("/rep/dashboard");
-    } catch (err) {
-      setError("Invalid student ID or password.");
-    } finally {
+  } catch (err) {
+      const status = err.response?.status;
+      if (status === 401 || status === 400) {
+        setError("Invalid student ID or password.");
+      } else if (status === 404) {
+        setError("Account not found. Check your student ID.");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    }
+finally {
       setLoading(false);
     }
   }
@@ -102,7 +110,7 @@ export default function Login() {
               <div style={{ fontSize: 22, fontWeight: 700, color: C.text }}>Handout Pay</div>
               <div style={{ fontSize: 13, color: C.muted, marginTop: 6 }}>Sign in to your account</div>
             </div>
-
+             <form onSubmit={handleSubmit}> 
             {error && (
               <div style={{
                 background: "#2d1414", border: `1px solid ${C.error}`,
@@ -111,6 +119,7 @@ export default function Login() {
                 display: "flex", alignItems: "center", gap: 8,
               }}>
                 <span>⚠️</span> {error}
+               
               </div>
             )}
 
@@ -161,9 +170,9 @@ export default function Login() {
               />
             </div>
 
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
+              <button
+              type="submit"
+               disabled={loading}
               style={{
                 width: "100%", padding: "14px",
                 background: loading ? "#4a4db5" : C.accent,
@@ -180,7 +189,9 @@ export default function Login() {
               {loading ? "Signing in..." : "Sign In"}
             </button>
 
-            <div style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: C.muted }}>
+            </form>
+              <div style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: C.muted }}>
+
               Course rep?{" "}
               <span
                 onClick={() => navigate("/register/rep")}
