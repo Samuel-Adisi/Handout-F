@@ -454,11 +454,12 @@ export default function StudentHandouts() {
         reference,
       });
       const msg = res.data?.message || "";
-      // Replace:
+     // Replace with:
+      const msg = res.data?.message || "";
       if (msg.includes("approved") || msg.includes("success")) {
         setStep("success");
       } else {
-      const res = await api.get(`/payments/${ref}/status/`);
+        pollPaymentStatus(paymentId);
       }
     } catch (err) {
       const errs = err.response?.data;
