@@ -338,7 +338,7 @@ const styles = `
     .hp-nav-logout-desktop { display: none; }
     .hp-filters { flex-direction: column; gap: 8px; }
     .hp-input { width: 100% !important; font-size: 16px; }
-    .hp-grid { grid-template-columns: 1fr; gap: 12px; }
+    .hp-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .hp-card { padding: 16px; }
     .hp-card-title { font-size: 14px; }
     .hp-card-desc  { font-size: 13px; }
@@ -357,6 +357,7 @@ const styles = `
     .hp-pay-btn { width: 100%; justify-content: center; }
     .hp-modal { padding: 20px 16px max(20px, env(safe-area-inset-bottom)); }
     .hp-modal-title { font-size: 16px; }
+    .hp-grid { grid-template-columns: 1fr; gap: 10px; }
   }
 
   @media (min-width: 769px) {
