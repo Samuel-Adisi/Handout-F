@@ -3,24 +3,23 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../../api/axios";
 
-
 const C = {
-  bg:        "#080809",
-  surface:   "#111113",
-  elevated:  "#18181c",
-  border:    "#242428",
+  bg:          "#080809",
+  surface:     "#111113",
+  elevated:    "#18181c",
+  border:      "#242428",
   borderHover: "#3a3a42",
-  accent:    "#6366f1",
-  accentDim: "#6366f120",
+  accent:      "#6366f1",
+  accentDim:   "#6366f120",
   accentHover: "#5254cc",
-  text:      "#f0f0f5",
-  muted:     "#7c7c8a",
-  subtle:    "#3a3a42",
-  green:     "#4ade80",
-  greenBg:   "#052e16",
-  yellow:    "#fbbf24",
-  red:       "#f87171",
-  error:     "#ef4444",
+  text:        "#f0f0f5",
+  muted:       "#7c7c8a",
+  subtle:      "#3a3a42",
+  green:       "#4ade80",
+  greenBg:     "#052e16",
+  yellow:      "#fbbf24",
+  red:         "#f87171",
+  error:       "#ef4444",
 };
 
 const styles = `
@@ -72,7 +71,6 @@ const styles = `
   .hp-nav-link:hover { background: ${C.elevated}; color: ${C.text}; }
   .hp-nav-link.active { background: ${C.accentDim}; color: ${C.accent}; font-weight: 600; }
 
-  /* hamburger — shown on small screens */
   .hp-hamburger {
     display: none;
     flex-direction: column; justify-content: center; align-items: center;
@@ -84,7 +82,6 @@ const styles = `
     background: ${C.muted}; border-radius: 2px; transition: all 0.2s;
   }
 
-  /* mobile drawer */
   .hp-drawer {
     position: fixed; top: 60px; left: 0; right: 0; z-index: 39;
     background: ${C.surface};
@@ -254,7 +251,6 @@ const styles = `
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* drag handle */
   .hp-modal-handle {
     width: 36px; height: 4px; border-radius: 2px;
     background: ${C.border}; margin: 0 auto 18px; display: block;
@@ -285,34 +281,6 @@ const styles = `
   .hp-field-input:focus { border-color: ${C.accent}; }
   .hp-field-input::placeholder { color: ${C.muted}; }
 
-  .hp-otp-input {
-    width: 100%; padding: 16px 14px; background: ${C.bg};
-    border: 1px solid ${C.border}; border-radius: 10px;
-    font-size: 28px; font-weight: 700; color: ${C.accent};
-    outline: none; font-family: 'DM Mono', monospace;
-    transition: border-color 0.15s; margin-bottom: 8px;
-    text-align: center; letter-spacing: 10px;
-    -webkit-appearance: none; min-height: 64px;
-  }
-  .hp-otp-input:focus { border-color: ${C.accent}; }
-  .hp-otp-input::placeholder { color: ${C.subtle}; font-size: 20px; letter-spacing: 6px; }
-
-  .hp-otp-hint {
-    font-size: 13px; color: ${C.muted}; text-align: center;
-    margin-bottom: 18px; line-height: 1.5;
-  }
-  .hp-otp-hint strong { color: ${C.text}; }
-
-  .hp-resend {
-    background: none; border: none; color: ${C.accent};
-    font-size: 13px; font-weight: 600; cursor: pointer;
-    font-family: 'DM Sans', inherit; padding: 0;
-    text-decoration: underline; margin-top: 12px;
-    display: block; text-align: center; width: 100%;
-    min-height: 44px; display: flex; align-items: center; justify-content: center;
-  }
-  .hp-resend:disabled { color: ${C.muted}; text-decoration: none; cursor: not-allowed; }
-
   .hp-step-indicator {
     display: flex; align-items: center; gap: 6px; margin-bottom: 16px;
   }
@@ -321,14 +289,14 @@ const styles = `
     width: 22px; height: 22px; border-radius: 50%;
     font-size: 11px; font-weight: 700; flex-shrink: 0;
   }
-  .hp-step.done { background: ${C.accent}; color: #fff; }
-  .hp-step.active { background: ${C.accentDim}; border: 1.5px solid ${C.accent}; color: ${C.accent}; }
+  .hp-step.done    { background: ${C.accent}; color: #fff; }
+  .hp-step.active  { background: ${C.accentDim}; border: 1.5px solid ${C.accent}; color: ${C.accent}; }
   .hp-step.pending { background: ${C.bg}; border: 1.5px solid ${C.border}; color: ${C.muted}; }
-  .hp-step-line { flex: 1; height: 1px; background: ${C.border}; }
+  .hp-step-line      { flex: 1; height: 1px; background: ${C.border}; }
   .hp-step-line.done { background: ${C.accent}; }
 
   .hp-alert { border-radius: 10px; padding: 11px 14px; font-size: 13px; margin-bottom: 14px; font-weight: 500; line-height: 1.5; }
-  .hp-alert.error { background: #2d141430; border: 1px solid ${C.error}50; color: ${C.error}; }
+  .hp-alert.error   { background: #2d141430; border: 1px solid ${C.error}50; color: ${C.error}; }
   .hp-alert.success { background: #052e1630; border: 1px solid #16a34a50; color: ${C.green}; }
 
   .hp-modal-actions { display: flex; gap: 10px; }
@@ -359,68 +327,53 @@ const styles = `
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── RESPONSIVE BREAKPOINTS ── */
-
-  /* Medium screens — tablets */
+  /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
-    .hp-nav { padding: 0 16px; }
+    .hp-nav  { padding: 0 16px; }
     .hp-main { padding: 22px 16px; }
     .hp-title { font-size: 20px; }
-
-    /* hide desktop nav links, show hamburger */
     .hp-nav-links { display: none; }
     .hp-hamburger { display: flex; }
-
-    /* desktop avatar/logout in nav hidden — moved to drawer */
     .hp-nav-avatar-desktop { display: none; }
     .hp-nav-logout-desktop { display: none; }
-
     .hp-filters { flex-direction: column; gap: 8px; }
     .hp-input { width: 100% !important; font-size: 16px; }
-
     .hp-grid { grid-template-columns: 1fr; gap: 12px; }
-
     .hp-card { padding: 16px; }
     .hp-card-title { font-size: 14px; }
-    .hp-card-desc { font-size: 13px; }
+    .hp-card-desc  { font-size: 13px; }
     .hp-price { font-size: 18px; }
   }
 
-  /* Small phones */
   @media (max-width: 400px) {
     .hp-nav { padding: 0 12px; height: 56px; }
     .hp-logo-text { font-size: 14px; }
-
     .hp-main { padding: 18px 12px; }
     .hp-title { font-size: 18px; }
     .hp-subtitle { font-size: 13px; }
-
     .hp-stat-pill { font-size: 11px; padding: 4px 10px; }
-
     .hp-card { padding: 14px; border-radius: 14px; }
     .hp-card-footer { flex-wrap: wrap; }
     .hp-pay-btn { width: 100%; justify-content: center; }
-
     .hp-modal { padding: 20px 16px max(20px, env(safe-area-inset-bottom)); }
     .hp-modal-title { font-size: 16px; }
-    .hp-otp-input { font-size: 24px; letter-spacing: 8px; }
   }
 
-  /* Large screens — restore centered desktop layout */
   @media (min-width: 769px) {
-    .hp-drawer { display: none !important; }
+    .hp-drawer  { display: none !important; }
     .hp-overlay { align-items: center; }
-    .hp-modal { border-radius: 20px; max-height: 88vh; }
+    .hp-modal   { border-radius: 20px; max-height: 88vh; }
     .hp-modal-handle { display: none; }
-    .hp-nav { padding: 0 32px; }
+    .hp-nav  { padding: 0 32px; }
     .hp-main { padding: 36px 32px; }
   }
 `;
 
-// step: "momo" | "otp" | "success"
+// step: "momo" | "pending" | "success"
 export default function StudentHandouts() {
-  const navigate     = useNavigate();
-  const queryClient  = useQueryClient();
+  const navigate    = useNavigate();
+  const queryClient = useQueryClient();
+
   const [search,       setSearch]       = useState("");
   const [filterCourse, setFilterCourse] = useState("");
   const [showModal,    setShowModal]    = useState(false);
@@ -428,16 +381,9 @@ export default function StudentHandouts() {
   const [momoNumber,   setMomoNumber]   = useState("");
   const [paying,       setPaying]       = useState(false);
   const [error,        setError]        = useState("");
-  const [success,      setSuccess]      = useState("");
   const [drawerOpen,   setDrawerOpen]   = useState(false);
-
-  // OTP state
   const [step,         setStep]         = useState("momo");
-  const [otp,          setOtp]          = useState("");
   const [reference,    setReference]    = useState("");
-  const [paymentId,    setPaymentId]    = useState("");
-  const [submittingOtp, setSubmittingOtp] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -463,9 +409,7 @@ export default function StudentHandouts() {
     setSelected(handout);
     setMomoNumber(user.phone || "");
     setError("");
-    setSuccess("");
     setStep("momo");
-    setOtp("");
     setReference("");
     setShowModal(true);
     setDrawerOpen(false);
@@ -474,10 +418,8 @@ export default function StudentHandouts() {
   function closeModal() {
     setShowModal(false);
     setStep("momo");
-    setOtp("");
     setReference("");
     setError("");
-    setSuccess("");
   }
 
   function maskPhone(phone) {
@@ -494,149 +436,77 @@ export default function StudentHandouts() {
         handout_id:  selected.id,
         momo_number: momoNumber,
       });
-      const nextStep = res.data?.next_step;
-      const ref      = res.data?.reference;
+      const ref = res.data?.reference;
       setReference(ref);
-      setPaymentId(res.data?.payment_id);
-
-      if (nextStep === "send_otp") {
-        setStep("otp");
-        startResendCooldown();
-      } else if (nextStep === "success") {
-        setStep("success");
-      } else {
-        setStep("otp");
-        startResendCooldown();
-      }
+      setStep("pending");
+      pollPaymentStatus(ref);
     } catch (err) {
       const errs = err.response?.data;
-      if (typeof errs === "object") {
-        setError(Object.values(errs).flat().join(" "));
-      } else {
-        setError("Payment failed. Please try again.");
-      }
+      setError(typeof errs === "object" ? Object.values(errs).flat().join(" ") : "Payment failed. Please try again.");
     } finally {
       setPaying(false);
     }
   }
 
   async function pollPaymentStatus(ref) {
-    setError("OTP submitted. Waiting for confirmation...");
     let attempts = 0;
-    const maxAttempts = 10;
+    const maxAttempts = 20; // 20 × 3s = 60s
 
     const interval = setInterval(async () => {
       attempts++;
       try {
-        const res = await api.get(`/payments/${ref}/status/`);
-        const paymentStatus = res.data?.status;
+        const res    = await api.get(`/payments/${ref}/status/`);
+        const status = res.data?.status;
 
-        if (paymentStatus === "successful") {
+        if (status === "successful") {
           clearInterval(interval);
           setStep("success");
-        } else if (paymentStatus === "failed") {
+        } else if (status === "failed") {
           clearInterval(interval);
           setError("Payment failed. Please try again.");
+          setStep("momo");
         } else if (attempts >= maxAttempts) {
           clearInterval(interval);
-          setError("Payment is taking longer than expected. Check My Payments for status.");
+          setError("Payment is taking too long. Check My Payments for the status.");
+          setStep("momo");
         }
-      } catch (err) {
+      } catch {
         clearInterval(interval);
+        setStep("momo");
       }
     }, 3000);
   }
 
-  async function handleSubmitOtp() {
-    if (!otp.trim() || otp.length < 4) { setError("Please enter the OTP from your SMS."); return; }
-    setSubmittingOtp(true);
-    setError("");
-    try {
-      const res = await api.post("/payments/submit-otp/", {
-        otp,
-        reference,
-      });
-      const msg = res.data?.message || "";
-      if (msg.includes("approved") || msg.includes("success")) {
-        setStep("success");
-      } else {
-        pollPaymentStatus(paymentId);
-      }
-    } catch (err) {
-      const errs = err.response?.data;
-      if (typeof errs === "object") {
-        setError(Object.values(errs).flat().join(" "));
-      } else {
-        setError("Invalid OTP. Please check and try again.");
-      }
-    } finally {
-      setSubmittingOtp(false);
-    }
-  }
-
-  function startResendCooldown() {
-    setResendCooldown(30);
-    const id = setInterval(() => {
-      setResendCooldown(prev => {
-        if (prev <= 1) { clearInterval(id); return 0; }
-        return prev - 1;
-      });
-    }, 1000);
-  }
-
-  async function handleResend() {
-    if (resendCooldown > 0) return;
-    setPaying(true);
-    setError("");
-    setOtp("");
-    try {
-      const res = await api.post("/payments/initiate/", {
-        handout_id:  selected.id,
-        momo_number: momoNumber,
-      });
-      setReference(res.data?.reference);
-      startResendCooldown();
-    } catch (err) {
-      setError("Could not resend OTP. Please try again.");
-    } finally {
-      setPaying(false);
-    }
-  }
-
-  const filtered = handouts.filter((h) => {
+  const filtered   = handouts.filter((h) => {
     const matchSearch = h.title.toLowerCase().includes(search.toLowerCase());
     const matchCourse = filterCourse ? h.course?.id === parseInt(filterCourse) : true;
     return matchSearch && matchCourse;
   });
 
-  const inStock    = filtered.filter(h => h.in_stock).length;
+  const inStock    = filtered.filter(h =>  h.in_stock).length;
   const outOfStock = filtered.filter(h => !h.in_stock).length;
 
   function stockClass(h) {
-    if (!h.in_stock) return "red";
-    if (h.stock <= 10) return "yellow";
+    if (!h.in_stock)    return "red";
+    if (h.stock <= 10)  return "yellow";
     return "green";
   }
 
   function stockLabel(h) {
-    if (!h.in_stock) return "Out of stock";
+    if (!h.in_stock)   return "Out of stock";
     if (h.stock <= 10) return `${h.stock} left`;
     return `${h.stock} in stock`;
   }
 
   function StepIndicator() {
     const s1 = step === "momo" ? "active" : "done";
-    const s2 = step === "otp" ? "active" : step === "success" ? "done" : "pending";
-    const s3 = step === "success" ? "active" : "pending";
+    const s2 = step === "success" ? "done" : step === "pending" ? "active" : "pending";
     const l1 = step !== "momo" ? "done" : "";
-    const l2 = step === "success" ? "done" : "";
     return (
       <div className="hp-step-indicator">
         <div className={`hp-step ${s1}`}>1</div>
         <div className={`hp-step-line ${l1}`} />
         <div className={`hp-step ${s2}`}>2</div>
-        <div className={`hp-step-line ${l2}`} />
-        <div className={`hp-step ${s3}`}>3</div>
       </div>
     );
   }
@@ -653,19 +523,14 @@ export default function StudentHandouts() {
             <span className="hp-logo-text">Handout Pay</span>
           </div>
 
-          {/* Desktop nav links */}
           <div className="hp-nav-links">
             <span className="hp-nav-link active" onClick={() => navigate("/student/handouts")}>Handouts</span>
-            <span className="hp-nav-link" onClick={() => navigate("/student/payments")}>My Payments</span>
+            <span className="hp-nav-link"        onClick={() => navigate("/student/payments")}>My Payments</span>
             <div className="hp-avatar hp-nav-avatar-desktop">{user.name?.[0]?.toUpperCase()}</div>
             <button className="hp-logout hp-nav-logout-desktop" onClick={handleLogout}>Logout</button>
           </div>
 
-          {/* Mobile right: avatar + hamburger */}
           <div className="hp-nav-right" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div className="hp-avatar" style={{ display: "none" }} id="mobile-avatar">
-              {user.name?.[0]?.toUpperCase()}
-            </div>
             <button
               className="hp-hamburger"
               onClick={() => setDrawerOpen(o => !o)}
@@ -693,17 +558,14 @@ export default function StudentHandouts() {
           </div>
         </div>
 
-        {/* Drawer backdrop */}
         {drawerOpen && (
           <div
             onClick={() => setDrawerOpen(false)}
-            style={{
-              position: "fixed", inset: 0, zIndex: 38,
-              background: "rgba(0,0,0,0.4)",
-            }}
+            style={{ position: "fixed", inset: 0, zIndex: 38, background: "rgba(0,0,0,0.4)" }}
           />
         )}
 
+        {/* ── MAIN ── */}
         <div className="hp-main">
           <div className="hp-header">
             <div className="hp-title">Browse Handouts</div>
@@ -776,13 +638,13 @@ export default function StudentHandouts() {
           )}
         </div>
 
-        {/* ── Modal ── */}
+        {/* ── MODAL ── */}
         {showModal && selected && (
           <div className="hp-overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
             <div className="hp-modal">
               <div className="hp-modal-handle" />
 
-              {/* ── Step: MoMo number ── */}
+              {/* Step 1 — Enter MoMo number */}
               {step === "momo" && (
                 <>
                   <div className="hp-modal-header">
@@ -821,49 +683,37 @@ export default function StudentHandouts() {
                 </>
               )}
 
-              {/* ── Step: OTP entry ── */}
-              {step === "otp" && (
+              {/* Step 2 — Waiting for phone approval */}
+              {step === "pending" && (
                 <>
                   <div className="hp-modal-header">
-                    <div className="hp-modal-title">Enter OTP</div>
-                    <div className="hp-modal-sub">Confirm your payment</div>
+                    <div className="hp-modal-title">Approve on Your Phone</div>
+                    <div className="hp-modal-sub">Waiting for your confirmation</div>
                   </div>
                   <StepIndicator />
                   {error && <div className="hp-alert error">{error}</div>}
-                  <div className="hp-otp-hint">
-                    An OTP was sent to <strong>{maskPhone(momoNumber)}</strong> via SMS.
-                    Enter the code below to approve the payment of{" "}
-                    <strong style={{ color: C.accent }}>GHS {selected.price}</strong>.
+                  <div style={{
+                    textAlign: "center", padding: "32px 16px",
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 16,
+                  }}>
+                    <div className="hp-spinner" style={{ width: 32, height: 32, borderWidth: 3 }} />
+                    <div style={{ fontSize: 14, color: C.text, fontWeight: 600 }}>
+                      Check your phone
+                    </div>
+                    <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6 }}>
+                      A prompt has been sent to{" "}
+                      <strong style={{ color: C.text }}>{maskPhone(momoNumber)}</strong>.
+                      Approve the payment of{" "}
+                      <strong style={{ color: C.accent }}>GHS {selected.price}</strong> on your phone to continue.
+                    </div>
                   </div>
-                  <input
-                    className="hp-otp-input"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    placeholder="······"
-                    maxLength={6}
-                    autoFocus
-                    type="tel"
-                    inputMode="numeric"
-                  />
-                  <div className="hp-modal-actions">
-                    <button className="hp-btn-cancel" onClick={closeModal}>Cancel</button>
-                    <button className="hp-btn-pay" onClick={handleSubmitOtp} disabled={submittingOtp || otp.length < 4}>
-                      {submittingOtp ? <><div className="hp-spinner" /> Verifying...</> : "Confirm Payment"}
-                    </button>
-                  </div>
-                  <button
-                    className="hp-resend"
-                    onClick={handleResend}
-                    disabled={resendCooldown > 0 || paying}
-                  >
-                    {resendCooldown > 0
-                      ? `Resend OTP in ${resendCooldown}s`
-                      : paying ? "Sending..." : "Didn't get a code? Resend"}
+                  <button className="hp-btn-cancel" style={{ width: "100%" }} onClick={closeModal}>
+                    Cancel
                   </button>
                 </>
               )}
 
-              {/* ── Step: Success ── */}
+              {/* Step 3 — Success */}
               {step === "success" && (
                 <>
                   <div className="hp-modal-header">

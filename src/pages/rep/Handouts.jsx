@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../../api/axios";
 
 const C = {
@@ -140,6 +141,40 @@ const styles = `
   }
   .ho-add-btn:hover { background: #5254cc; }
 
+  /* ── BULK BAR ── */
+  .ho-bulk-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #1e1b2e; border: 1px solid #3730a3;
+    border-radius: 10px; padding: 10px 16px; margin-bottom: 14px;
+    gap: 12px; animation: fadeIn 0.15s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .ho-bulk-label { font-size: 13px; font-weight: 600; color: ${C.accent}; }
+
+  .ho-btn-bulk-delete {
+    padding: 8px 16px; border-radius: 7px;
+    border: 1px solid #3d1515; background: transparent;
+    font-size: 12px; font-weight: 600; color: ${C.error};
+    cursor: pointer; font-family: inherit; min-height: 34px;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .ho-btn-bulk-delete:hover { background: #2d1414; }
+  .ho-btn-bulk-cancel {
+    padding: 8px 16px; border-radius: 7px;
+    border: 1px solid ${C.border}; background: transparent;
+    font-size: 12px; font-weight: 600; color: ${C.muted};
+    cursor: pointer; font-family: inherit; min-height: 34px;
+    transition: all 0.15s;
+  }
+  .ho-btn-bulk-cancel:hover { background: #2e2e2e; color: ${C.text}; }
+
+  /* ── CHECKBOX ── */
+  .ho-cb {
+    width: 16px; height: 16px; accent-color: ${C.accent};
+    cursor: pointer; flex-shrink: 0;
+  }
+
   /* ── FILTERS ── */
   .ho-filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
 
@@ -166,6 +201,7 @@ const styles = `
     background: #141414;
   }
   .ho-table td { padding: 14px 20px; border-top: 1px solid ${C.border}; }
+  .ho-table tr.selected-row { background: #1a1830; }
 
   .ho-course-badge {
     padding: 3px 10px; border-radius: 6px;
@@ -199,7 +235,9 @@ const styles = `
   .ho-hcard {
     background: ${C.surface}; border: 1px solid ${C.border};
     border-radius: 14px; padding: 16px; margin-bottom: 10px;
+    transition: border-color 0.15s;
   }
+  .ho-hcard.selected { border-color: ${C.accent}; background: #1a1830; }
 
   .ho-hcard-top {
     display: flex; align-items: flex-start;
@@ -307,7 +345,6 @@ const styles = `
     .ho-filters { flex-direction: column; gap: 8px; }
     .ho-input { width: 100% !important; font-size: 16px; }
 
-    /* swap table ↔ card list */
     .ho-table-card { display: none; }
     .ho-card-list { display: block; }
   }
@@ -381,9 +418,20 @@ function stockColor(stock) {
 }
 
 export default function Handouts() {
-  const [handouts,     setHandouts]     = useState([]);
-  const [courses,      setCourses]      = useState([]);
-  const [loading,      setLoading]      = useState(true);
+  const queryClient = useQueryClient();
+
+  const { data: handouts = [], isLoading: loadingHandouts } = useQuery({
+    queryKey: ["rep-handouts"],
+    queryFn: () => api.get("/handouts/").then(r => r.data),
+  });
+
+  const { data: courses = [], isLoading: loadingCourses } = useQuery({
+    queryKey: ["rep-courses"],
+    queryFn: () => api.get("/courses/").then(r => r.data),
+  });
+
+  const loading = loadingHandouts || loadingCourses;
+
   const [showModal,    setShowModal]    = useState(false);
   const [editing,      setEditing]      = useState(null);
   const [form,         setForm]         = useState({ title: "", description: "", course_id: "", price: "", stock: "" });
@@ -392,23 +440,41 @@ export default function Handouts() {
   const [search,       setSearch]       = useState("");
   const [filterCourse, setFilterCourse] = useState("");
   const [drawerOpen,   setDrawerOpen]   = useState(false);
+  const [selected,     setSelected]     = useState(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
-  async function load() {
-    try {
-      const [handoutsRes, coursesRes] = await Promise.all([
-        api.get("/handouts/"),
-        api.get("/courses/"),
-      ]);
-      setHandouts(handoutsRes.data);
-      setCourses(coursesRes.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+  // ── Selection helpers ──
+  function toggleOne(id) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    if (selected.size === filtered.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(filtered.map((h) => h.id)));
     }
   }
 
-  useEffect(() => { load(); }, []);
+  function clearSelection() { setSelected(new Set()); }
+
+  async function handleBulkDelete() {
+    if (!confirm(`Delete ${selected.size} handout${selected.size > 1 ? "s" : ""}?`)) return;
+    setBulkDeleting(true);
+    try {
+      await Promise.all([...selected].map((id) => api.delete(`/handouts/${id}/`)));
+      queryClient.setQueryData(["rep-handouts"], (prev) => prev.filter((h) => !selected.has(h.id)));
+      setSelected(new Set());
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setBulkDeleting(false);
+    }
+  }
 
   function openAdd() {
     setEditing(null);
@@ -434,7 +500,7 @@ export default function Handouts() {
         await api.post("/handouts/", form);
       }
       setShowModal(false);
-      load();
+      queryClient.invalidateQueries({ queryKey: ["rep-handouts"] });
     } catch (err) {
       const errs = err.response?.data;
       setError(typeof errs === "string" ? errs : JSON.stringify(errs));
@@ -447,7 +513,8 @@ export default function Handouts() {
     if (!confirm("Delete this handout?")) return;
     try {
       await api.delete(`/handouts/${id}/`);
-      load();
+      queryClient.setQueryData(["rep-handouts"], (prev) => prev.filter((h) => h.id !== id));
+      setSelected((prev) => { const next = new Set(prev); next.delete(id); return next; });
     } catch (err) {
       console.error(err);
     }
@@ -458,6 +525,9 @@ export default function Handouts() {
     const matchCourse = filterCourse ? h.course?.id === parseInt(filterCourse) : true;
     return matchSearch && matchCourse;
   });
+
+  const allSelected  = filtered.length > 0 && selected.size === filtered.length;
+  const someSelected = selected.size > 0;
 
   const ModalForm = (
     <div className="ho-modal">
@@ -582,6 +652,21 @@ export default function Handouts() {
             </select>
           </div>
 
+          {/* Bulk Action Bar */}
+          {someSelected && (
+            <div className="ho-bulk-bar">
+              <span className="ho-bulk-label">
+                {selected.size} handout{selected.size > 1 ? "s" : ""} selected
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="ho-btn-bulk-cancel" onClick={clearSelection}>Cancel</button>
+                <button className="ho-btn-bulk-delete" onClick={handleBulkDelete} disabled={bulkDeleting}>
+                  {bulkDeleting ? "Deleting..." : `Delete ${selected.size}`}
+                </button>
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div style={{ color: C.muted, textAlign: "center", padding: 40 }}>Loading...</div>
           ) : filtered.length === 0 ? (
@@ -593,6 +678,14 @@ export default function Handouts() {
                 <table className="ho-table">
                   <thead>
                     <tr style={{ background: "#141414" }}>
+                      <th style={{ width: 40 }}>
+                        <input
+                          type="checkbox"
+                          className="ho-cb"
+                          checked={allSelected}
+                          onChange={toggleAll}
+                        />
+                      </th>
                       {["Title", "Course", "Price", "Stock", "Status", "Actions"].map((h) => (
                         <th key={h}>{h}</th>
                       ))}
@@ -600,7 +693,15 @@ export default function Handouts() {
                   </thead>
                   <tbody>
                     {filtered.map((h) => (
-                      <tr key={h.id}>
+                      <tr key={h.id} className={selected.has(h.id) ? "selected-row" : ""}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            className="ho-cb"
+                            checked={selected.has(h.id)}
+                            onChange={() => toggleOne(h.id)}
+                          />
+                        </td>
                         <td>
                           <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{h.title}</div>
                           <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{h.description?.slice(0, 50)}</div>
@@ -632,9 +733,30 @@ export default function Handouts() {
 
               {/* ── Mobile Card List ── */}
               <div className="ho-card-list">
+
+                {/* Mobile Select All row */}
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                  <input
+                    type="checkbox"
+                    className="ho-cb"
+                    checked={allSelected}
+                    onChange={toggleAll}
+                  />
+                  <span style={{ fontSize: 12, color: C.muted }}>
+                    {allSelected ? "Deselect all" : "Select all"}
+                  </span>
+                </div>
+
                 {filtered.map((h) => (
-                  <div key={h.id} className="ho-hcard">
+                  <div key={h.id} className={`ho-hcard ${selected.has(h.id) ? "selected" : ""}`}>
                     <div className="ho-hcard-top">
+                      <input
+                        type="checkbox"
+                        className="ho-cb"
+                        checked={selected.has(h.id)}
+                        onChange={() => toggleOne(h.id)}
+                        style={{ marginTop: 2 }}
+                      />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6, lineHeight: 1.4 }}>
                           {h.title}
