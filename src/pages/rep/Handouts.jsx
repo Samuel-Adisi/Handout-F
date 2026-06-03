@@ -509,7 +509,11 @@ export default function Handouts() {
       queryClient.invalidateQueries({ queryKey: ["rep-handouts"] });
     } catch (err) {
       const errs = err.response?.data;
-      setError(typeof errs === "string" ? errs : JSON.stringify(errs));
+      setError(
+      typeof errs === "object"
+        ? Object.values(errs).flat().join(" ")
+        : "Something went wrong."
+    );
     } finally {
       setSaving(false);
     }
