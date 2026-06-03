@@ -26,9 +26,10 @@ const styles = `
   body { background: ${C.bg}; }
 
   .db-shell {
-    display: flex; min-height: 100vh;
-    background: ${C.bg}; font-family: system-ui, sans-serif;
-  }
+  display: flex; min-height: 100vh;
+  background: ${C.bg}; font-family: system-ui, sans-serif;
+  overflow-x: hidden;   /* ADD THIS */
+}
 
   /* ── SIDEBAR ── */
   .db-sidebar {
@@ -207,25 +208,34 @@ const styles = `
   }
 
   /* ── RESPONSIVE ── */
+
   @media (max-width: 768px) {
-    .db-sidebar { display: none; }
-    .db-topbar { display: flex; }
-    .db-main { padding: 20px 16px; }
+  .db-shell { flex-direction: column; }          /* ← KEY FIX */
 
-    .db-kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
-    .db-kpi-card { padding: 14px; }
+  .db-sidebar { display: none; }
+  .db-topbar  { display: flex; width: 100%; }    /* now full-width row */
 
-    /* hide table, show card list */
-    .db-table { display: none; }
-    .db-pay-list { display: block; }
-    .db-table-header { padding: 14px 16px; }
+  .db-main {
+    flex: 1; width: 100%; max-width: 100%;
+    padding: 20px 16px; min-width: 0; overflow-x: hidden;
   }
 
-  @media (max-width: 400px) {
-    .db-main { padding: 16px 12px; }
-    .db-kpi-grid { gap: 8px; }
-    .db-kpi-card { padding: 12px; }
+  .db-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px; margin-bottom: 20px;
   }
+  .db-kpi-card { padding: 14px; min-width: 0; }
+
+  .db-table { display: none; }
+  .db-pay-list { display: block; }
+  .db-table-header { padding: 14px 16px; }
+}
+  
+@media (max-width: 400px) {
+  .db-main { padding: 16px 10px; }
+  .db-kpi-grid { gap: 6px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .db-kpi-card { padding: 10px; }
+}
 
   @media (min-width: 769px) {
     .db-drawer-overlay { display: none !important; }

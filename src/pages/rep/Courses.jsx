@@ -287,16 +287,18 @@ const styles = `
   }
 
   @media (max-width: 768px) {
-    /* hide sticky sidebar, show topbar */
+    .cr-shell   { flex-direction: column; }
     .cr-sidebar { display: none; }
-    .cr-topbar { display: flex; }
+    .cr-topbar  { display: flex; width: 100%; }
 
-    .cr-main { padding: 20px 16px; }
+    .cr-main {
+      flex: 1; width: 100%; max-width: 100%;
+      padding: 20px 16px; min-width: 0; overflow-x: hidden;
+    }
+
     .cr-grid { grid-template-columns: 1fr; }
-
     .cr-page-header { margin-bottom: 20px; }
   }
-
   @media (max-width: 400px) {
     .cr-main { padding: 16px 12px; }
     .cr-card { padding: 14px; }

@@ -338,22 +338,28 @@ const styles = `
 
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
-    .ho-sidebar { display: none; }
-    .ho-topbar { display: flex; }
-    .ho-main { padding: 20px 16px; }
+  .ho-shell  { flex-direction: column; }          /* ← THE FIX */
 
-    .ho-filters { flex-direction: column; gap: 8px; }
-    .ho-input { width: 100% !important; font-size: 16px; }
+  .ho-sidebar { display: none; }
+  .ho-topbar  { display: flex; width: 100%; }
 
-    .ho-table-card { display: none; }
-    .ho-card-list { display: block; }
+  .ho-main {
+    flex: 1; width: 100%; max-width: 100%;
+    padding: 20px 16px; min-width: 0; overflow-x: hidden;
   }
 
-  @media (max-width: 400px) {
-    .ho-main { padding: 16px 12px; }
-    .ho-hcard { padding: 12px; }
-    .ho-add-btn { font-size: 12px; padding: 10px 12px; }
-  }
+  .ho-filters { flex-direction: column; gap: 8px; }
+  .ho-input   { width: 100% !important; font-size: 16px; }
+
+  .ho-table-card { display: none; }
+  .ho-card-list  { display: block; }
+}
+
+ @media (max-width: 400px) {
+  .ho-main  { padding: 16px 10px; }
+  .ho-hcard { padding: 12px; }
+  .ho-add-btn { font-size: 12px; padding: 10px 12px; }
+}
 
   @media (min-width: 769px) {
     .ho-drawer-overlay { display: none !important; }
