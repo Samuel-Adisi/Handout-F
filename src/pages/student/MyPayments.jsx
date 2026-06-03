@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "../../api/axios";
@@ -31,12 +32,13 @@ const styles = `
     color: ${C.text};
   }
 
+  /* ── NAV ── */
   .mp-nav {
     position: sticky; top: 0; z-index: 40;
     background: ${C.surface}ee;
     backdrop-filter: blur(12px);
     border-bottom: 1px solid ${C.border};
-    padding: 0 32px; height: 60px;
+    padding: 0 20px; height: 60px;
     display: flex; align-items: center; justify-content: space-between;
   }
 
@@ -46,7 +48,7 @@ const styles = `
     width: 34px; height: 34px; border-radius: 9px;
     background: ${C.accent};
     display: flex; align-items: center; justify-content: center;
-    font-size: 15px; font-weight: 700; color: #fff;
+    font-size: 15px; font-weight: 700; color: #fff; flex-shrink: 0;
   }
 
   .mp-logo-text { font-size: 15px; font-weight: 600; color: ${C.text}; letter-spacing: -0.3px; }
@@ -58,6 +60,7 @@ const styles = `
     font-size: 13px; font-weight: 500; cursor: pointer;
     transition: all 0.15s; border: none; background: transparent;
     font-family: inherit; color: ${C.muted}; text-decoration: none;
+    white-space: nowrap;
   }
   .mp-nav-link:hover { background: ${C.elevated}; color: ${C.text}; }
   .mp-nav-link.active { background: ${C.accentDim}; color: ${C.accent}; font-weight: 600; }
@@ -66,26 +69,60 @@ const styles = `
     width: 32px; height: 32px; border-radius: 50%;
     background: linear-gradient(135deg, ${C.accent}, #8b5cf6);
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700; color: #fff; margin-left: 8px;
+    font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
   }
 
   .mp-logout {
     padding: 6px 14px; border-radius: 8px;
     border: 1px solid ${C.border}; background: transparent;
     font-size: 12px; color: ${C.muted}; cursor: pointer;
-    font-family: inherit; transition: all 0.15s; margin-left: 4px;
+    font-family: inherit; transition: all 0.15s;
   }
   .mp-logout:hover { background: ${C.elevated}; color: ${C.text}; }
 
-  .mp-main { max-width: 800px; margin: 0 auto; padding: 36px 32px; }
-  .mp-header { margin-bottom: 28px; }
-  .mp-title { font-size: 26px; font-weight: 700; color: ${C.text}; letter-spacing: -0.5px; margin-bottom: 4px; }
+  /* hamburger */
+  .mp-hamburger {
+    display: none;
+    flex-direction: column; justify-content: center; align-items: center;
+    width: 36px; height: 36px; border-radius: 8px;
+    border: 1px solid ${C.border}; background: transparent;
+    cursor: pointer; gap: 5px; flex-shrink: 0;
+  }
+  .mp-hamburger span {
+    display: block; width: 16px; height: 1.5px;
+    background: ${C.muted}; border-radius: 2px; transition: all 0.2s;
+  }
+
+  /* mobile drawer */
+  .mp-drawer {
+    position: fixed; top: 60px; left: 0; right: 0; z-index: 39;
+    background: ${C.surface};
+    border-bottom: 1px solid ${C.border};
+    padding: 12px 16px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+    transform: translateY(-120%);
+    transition: transform 0.25s ease;
+  }
+  .mp-drawer.open { transform: translateY(0); }
+  .mp-drawer .mp-nav-link { padding: 12px 14px; font-size: 14px; }
+
+  .mp-drawer-footer {
+    display: flex; align-items: center; gap: 10px;
+    padding-top: 12px; margin-top: 4px;
+    border-top: 1px solid ${C.border};
+  }
+
+  /* ── MAIN ── */
+  .mp-main { max-width: 800px; margin: 0 auto; padding: 28px 20px; }
+  .mp-header { margin-bottom: 24px; }
+  .mp-title { font-size: 22px; font-weight: 700; color: ${C.text}; letter-spacing: -0.5px; margin-bottom: 4px; }
   .mp-subtitle { font-size: 14px; color: ${C.muted}; }
 
+  /* ── SKELETON ── */
   .mp-skeleton {
     background: ${C.elevated}; border: 1px solid ${C.border};
-    border-radius: 14px; padding: 18px;
-    display: flex; align-items: center; gap: 16px; margin-bottom: 12px;
+    border-radius: 14px; padding: 16px;
+    display: flex; align-items: center; gap: 14px; margin-bottom: 10px;
   }
 
   .mp-skel-circle {
@@ -110,10 +147,11 @@ const styles = `
     to   { opacity: 1; transform: translateY(0); }
   }
 
+  /* ── PAYMENT ROW ── */
   .mp-row {
     background: ${C.elevated}; border: 1px solid ${C.border};
-    border-radius: 14px; padding: 18px;
-    display: flex; align-items: center; gap: 16px;
+    border-radius: 14px; padding: 16px;
+    display: flex; align-items: center; gap: 14px;
     transition: border-color 0.2s, transform 0.15s;
     animation: fadeUp 0.3s ease both; margin-bottom: 10px;
   }
@@ -127,7 +165,10 @@ const styles = `
   }
 
   .mp-info { flex: 1; min-width: 0; }
-  .mp-name { font-size: 14px; font-weight: 600; color: ${C.text}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mp-name {
+    font-size: 14px; font-weight: 600; color: ${C.text};
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
   .mp-meta { font-size: 12px; color: ${C.muted}; margin-top: 3px; }
 
   .mp-amount-col { text-align: right; flex-shrink: 0; }
@@ -139,6 +180,7 @@ const styles = `
   .mp-date { font-size: 11px; color: ${C.muted}; }
   .mp-confirmed { font-size: 11px; color: ${C.green}; margin-top: 3px; }
 
+  /* ── EMPTY ── */
   .mp-empty {
     background: ${C.elevated}; border: 1px solid ${C.border};
     border-radius: 14px; padding: 60px 20px; text-align: center;
@@ -147,18 +189,51 @@ const styles = `
   .mp-empty-title { font-size: 16px; font-weight: 600; color: ${C.text}; margin-bottom: 6px; }
   .mp-empty-sub { font-size: 13px; color: ${C.muted}; margin-bottom: 20px; }
   .mp-browse-btn {
-    padding: 10px 22px; background: ${C.accent};
+    padding: 12px 22px; background: ${C.accent};
     color: #fff; border: none; border-radius: 9px;
-    font-size: 13px; font-weight: 600; cursor: pointer;
-    font-family: inherit; transition: background 0.15s;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: background 0.15s; min-height: 44px;
   }
   .mp-browse-btn:hover { background: ${C.accentHover}; }
 
-  @media (max-width: 600px) {
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
     .mp-nav { padding: 0 16px; }
-    .mp-main { padding: 24px 16px; }
-    .mp-date-col { display: none; }
+    .mp-main { padding: 22px 16px; }
     .mp-title { font-size: 20px; }
+
+    .mp-nav-links { display: none; }
+    .mp-hamburger { display: flex; }
+
+    /* on mobile: stack amount + badge below name/meta */
+    .mp-row { flex-wrap: wrap; gap: 10px; padding: 14px; }
+    .mp-info { min-width: 0; flex: 1 1 calc(100% - 58px); }
+    .mp-amount-col { flex: 0 0 auto; }
+    .mp-date-col { display: none; }
+
+    /* show date inline under meta on mobile */
+    .mp-meta-date {
+      display: inline !important;
+      margin-left: 4px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .mp-nav { padding: 0 12px; height: 56px; }
+    .mp-logo-text { font-size: 14px; }
+    .mp-main { padding: 18px 12px; }
+    .mp-title { font-size: 18px; }
+    .mp-row { padding: 12px; }
+    .mp-icon { width: 38px; height: 38px; font-size: 17px; }
+    .mp-amount { font-size: 14px; }
+    .mp-name { font-size: 13px; }
+  }
+
+  @media (min-width: 769px) {
+    .mp-drawer { display: none !important; }
+    .mp-nav { padding: 0 32px; }
+    .mp-main { padding: 36px 32px; }
+    .mp-meta-date { display: none; }
   }
 `;
 
@@ -190,8 +265,10 @@ function SkeletonRows() {
 }
 
 export default function MyPayments() {
-  const navigate     = useNavigate();
-  const queryClient  = useQueryClient();
+  const navigate    = useNavigate();
+  const queryClient = useQueryClient();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const { data: payments = [], isLoading } = useQuery({
@@ -210,18 +287,58 @@ export default function MyPayments() {
       <style>{styles}</style>
       <div className="mp-page">
 
+        {/* ── NAV ── */}
         <nav className="mp-nav">
           <div className="mp-logo">
             <div className="mp-logo-icon">H</div>
             <span className="mp-logo-text">Handout Pay</span>
           </div>
+
+          {/* Desktop links */}
           <div className="mp-nav-links">
             <span className="mp-nav-link" onClick={() => navigate("/student/handouts")}>Handouts</span>
             <span className="mp-nav-link active">My Payments</span>
             <div className="mp-avatar">{user.name?.[0]?.toUpperCase()}</div>
             <button className="mp-logout" onClick={handleLogout}>Logout</button>
           </div>
+
+          {/* Mobile hamburger */}
+          <button
+            className="mp-hamburger"
+            onClick={() => setDrawerOpen(o => !o)}
+            aria-label="Menu"
+          >
+            <span style={drawerOpen ? { transform: "rotate(45deg) translate(4px, 4px)" } : {}} />
+            <span style={drawerOpen ? { opacity: 0 } : {}} />
+            <span style={drawerOpen ? { transform: "rotate(-45deg) translate(4px, -4px)" } : {}} />
+          </button>
         </nav>
+
+        {/* Mobile drawer */}
+        <div className={`mp-drawer ${drawerOpen ? "open" : ""}`}>
+          <span className="mp-nav-link" onClick={() => { navigate("/student/handouts"); setDrawerOpen(false); }}>
+            Handouts
+          </span>
+          <span className="mp-nav-link active" onClick={() => setDrawerOpen(false)}>
+            My Payments
+          </span>
+          <div className="mp-drawer-footer">
+            <div className="mp-avatar">{user.name?.[0]?.toUpperCase()}</div>
+            <span style={{ fontSize: 13, color: C.muted, flex: 1 }}>{user.name || "Student"}</span>
+            <button className="mp-logout" onClick={handleLogout}>Logout</button>
+          </div>
+        </div>
+
+        {/* Drawer backdrop */}
+        {drawerOpen && (
+          <div
+            onClick={() => setDrawerOpen(false)}
+            style={{
+              position: "fixed", inset: 0, zIndex: 38,
+              background: "rgba(0,0,0,0.4)",
+            }}
+          />
+        )}
 
         <div className="mp-main">
           <div className="mp-header">
@@ -249,7 +366,13 @@ export default function MyPayments() {
                     <div className="mp-icon">📄</div>
                     <div className="mp-info">
                       <div className="mp-name">{p.handout?.title}</div>
-                      <div className="mp-meta">{p.handout?.course?.code} · Ref: {p.reference}</div>
+                      <div className="mp-meta">
+                        {p.handout?.course?.code} · Ref: {p.reference}
+                        {/* date shown inline on mobile only */}
+                        <span className="mp-meta-date" style={{ display: "none" }}>
+                          {" · "}{new Date(p.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
                     <div className="mp-amount-col">
                       <div className="mp-amount">GHS {p.amount}</div>

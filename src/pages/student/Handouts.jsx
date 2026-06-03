@@ -36,12 +36,13 @@ const styles = `
     color: ${C.text};
   }
 
+  /* ── NAV ── */
   .hp-nav {
     position: sticky; top: 0; z-index: 40;
     background: ${C.surface}ee;
     backdrop-filter: blur(12px);
     border-bottom: 1px solid ${C.border};
-    padding: 0 32px; height: 60px;
+    padding: 0 20px; height: 60px;
     display: flex; align-items: center; justify-content: space-between;
   }
 
@@ -52,9 +53,12 @@ const styles = `
     background: ${C.accent};
     display: flex; align-items: center; justify-content: center;
     font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.5px;
+    flex-shrink: 0;
   }
 
   .hp-logo-text { font-size: 15px; font-weight: 600; color: ${C.text}; letter-spacing: -0.3px; }
+
+  .hp-nav-right { display: flex; align-items: center; gap: 4px; }
 
   .hp-nav-links { display: flex; align-items: center; gap: 4px; }
 
@@ -63,54 +67,96 @@ const styles = `
     font-size: 13px; font-weight: 500; cursor: pointer;
     transition: all 0.15s; border: none; background: transparent;
     font-family: inherit; color: ${C.muted}; text-decoration: none;
+    white-space: nowrap;
   }
   .hp-nav-link:hover { background: ${C.elevated}; color: ${C.text}; }
   .hp-nav-link.active { background: ${C.accentDim}; color: ${C.accent}; font-weight: 600; }
+
+  /* hamburger — shown on small screens */
+  .hp-hamburger {
+    display: none;
+    flex-direction: column; justify-content: center; align-items: center;
+    width: 36px; height: 36px; border-radius: 8px; border: 1px solid ${C.border};
+    background: transparent; cursor: pointer; gap: 5px; flex-shrink: 0;
+  }
+  .hp-hamburger span {
+    display: block; width: 16px; height: 1.5px;
+    background: ${C.muted}; border-radius: 2px; transition: all 0.2s;
+  }
+
+  /* mobile drawer */
+  .hp-drawer {
+    position: fixed; top: 60px; left: 0; right: 0; z-index: 39;
+    background: ${C.surface};
+    border-bottom: 1px solid ${C.border};
+    padding: 12px 16px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+    transform: translateY(-120%);
+    transition: transform 0.25s ease;
+  }
+  .hp-drawer.open { transform: translateY(0); }
+  .hp-drawer .hp-nav-link { padding: 12px 14px; font-size: 14px; }
+
+  .hp-drawer-footer {
+    display: flex; align-items: center; gap: 10px;
+    padding-top: 12px; margin-top: 4px;
+    border-top: 1px solid ${C.border};
+  }
 
   .hp-avatar {
     width: 32px; height: 32px; border-radius: 50%;
     background: linear-gradient(135deg, ${C.accent}, #8b5cf6);
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700; color: #fff; margin-left: 8px; flex-shrink: 0;
+    font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
   }
 
   .hp-logout {
     padding: 6px 14px; border-radius: 8px;
     border: 1px solid ${C.border}; background: transparent;
     font-size: 12px; color: ${C.muted}; cursor: pointer;
-    font-family: inherit; transition: all 0.15s; margin-left: 4px;
+    font-family: inherit; transition: all 0.15s;
   }
   .hp-logout:hover { background: ${C.elevated}; color: ${C.text}; }
 
-  .hp-main { max-width: 1100px; margin: 0 auto; padding: 36px 32px; }
-  .hp-header { margin-bottom: 32px; }
-  .hp-title { font-size: 26px; font-weight: 700; color: ${C.text}; letter-spacing: -0.5px; margin-bottom: 4px; }
+  /* ── MAIN ── */
+  .hp-main { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+  .hp-header { margin-bottom: 24px; }
+  .hp-title { font-size: 22px; font-weight: 700; color: ${C.text}; letter-spacing: -0.5px; margin-bottom: 4px; }
   .hp-subtitle { font-size: 14px; color: ${C.muted}; }
 
-  .hp-filters { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; }
+  /* ── FILTERS ── */
+  .hp-filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
 
   .hp-input {
-    padding: 9px 14px; background: ${C.elevated};
+    padding: 10px 14px; background: ${C.elevated};
     border: 1px solid ${C.border}; border-radius: 10px;
-    font-size: 13px; color: ${C.text}; outline: none;
+    font-size: 14px; color: ${C.text}; outline: none;
     font-family: 'DM Sans', inherit; transition: border-color 0.15s; appearance: none;
+    -webkit-appearance: none; min-height: 44px;
   }
   .hp-input::placeholder { color: ${C.muted}; }
   .hp-input:focus { border-color: ${C.accent}; }
 
-  .hp-stats { display: flex; gap: 6px; margin-bottom: 28px; flex-wrap: wrap; }
+  /* ── STATS ── */
+  .hp-stats { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
   .hp-stat-pill {
     padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
     background: ${C.elevated}; border: 1px solid ${C.border}; color: ${C.muted};
   }
   .hp-stat-pill span { font-weight: 700; color: ${C.text}; margin-right: 3px; }
 
-  .hp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  /* ── GRID ── */
+  .hp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
 
+  /* ── CARD ── */
   .hp-card {
     background: ${C.elevated}; border: 1px solid ${C.border};
-    border-radius: 16px; padding: 22px;
-    display: flex; flex-direction: column; gap: 0;
+    border-radius: 16px; padding: 20px;
+    display: flex; flex-direction: column;
     transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
     animation: fadeUp 0.3s ease both;
   }
@@ -120,7 +166,7 @@ const styles = `
   }
 
   .hp-skel-card {
-    border-radius: 16px; min-height: 180px;
+    border-radius: 16px; min-height: 170px;
     border: 1px solid ${C.border};
     background: linear-gradient(90deg, #18181c 25%, #242428 50%, #18181c 75%);
     background-size: 200% 100%;
@@ -137,7 +183,7 @@ const styles = `
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  .hp-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+  .hp-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
 
   .hp-course-badge {
     padding: 4px 10px; border-radius: 6px;
@@ -155,22 +201,24 @@ const styles = `
   .hp-stock.red { color: ${C.red}; }
   .hp-stock.red::before { background: ${C.red}; }
 
-  .hp-card-title { font-size: 15px; font-weight: 600; color: ${C.text}; margin-bottom: 6px; letter-spacing: -0.2px; line-height: 1.4; }
-  .hp-card-desc { font-size: 12.5px; color: ${C.muted}; line-height: 1.55; flex: 1; margin-bottom: 18px; min-height: 38px; }
+  .hp-card-title { font-size: 14px; font-weight: 600; color: ${C.text}; margin-bottom: 6px; letter-spacing: -0.2px; line-height: 1.4; }
+  .hp-card-desc { font-size: 12.5px; color: ${C.muted}; line-height: 1.55; flex: 1; margin-bottom: 16px; min-height: 36px; }
 
   .hp-card-footer {
     display: flex; align-items: center; justify-content: space-between;
-    padding-top: 16px; border-top: 1px solid ${C.border};
+    padding-top: 14px; border-top: 1px solid ${C.border};
+    gap: 10px;
   }
 
-  .hp-price { font-size: 22px; font-weight: 700; color: ${C.text}; letter-spacing: -0.5px; }
-  .hp-price-currency { font-size: 13px; font-weight: 500; color: ${C.muted}; margin-right: 2px; }
+  .hp-price { font-size: 20px; font-weight: 700; color: ${C.text}; letter-spacing: -0.5px; flex-shrink: 0; }
+  .hp-price-currency { font-size: 12px; font-weight: 500; color: ${C.muted}; margin-right: 2px; }
 
   .hp-pay-btn {
-    padding: 9px 18px; border-radius: 9px; border: none;
+    padding: 10px 16px; border-radius: 9px; border: none;
     font-size: 13px; font-weight: 600; cursor: pointer;
     font-family: 'DM Sans', inherit; transition: all 0.15s;
     background: ${C.accent}; color: #fff;
+    min-height: 44px; white-space: nowrap;
   }
   .hp-pay-btn:hover:not(:disabled) { background: ${C.accentHover}; transform: translateY(-1px); }
   .hp-pay-btn:disabled {
@@ -178,53 +226,65 @@ const styles = `
     cursor: not-allowed; border: 1px solid ${C.border};
   }
 
-  .hp-empty { text-align: center; padding: 80px 20px; color: ${C.muted}; }
+  /* ── EMPTY ── */
+  .hp-empty { text-align: center; padding: 60px 20px; color: ${C.muted}; }
   .hp-empty-icon { font-size: 40px; margin-bottom: 14px; opacity: 0.5; }
   .hp-empty-title { font-size: 16px; font-weight: 600; color: ${C.text}; margin-bottom: 6px; }
 
+  /* ── OVERLAY & MODAL ── */
   .hp-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.75);
-    backdrop-filter: blur(4px); display: flex; align-items: center;
-    justify-content: center; z-index: 100; padding: 20px;
+    backdrop-filter: blur(4px); display: flex; align-items: flex-end;
+    justify-content: center; z-index: 100;
     animation: fadeIn 0.15s ease;
   }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
   .hp-modal {
     background: ${C.elevated}; border: 1px solid ${C.border};
-    border-radius: 20px; padding: 28px; width: 100%; max-width: 420px;
-    animation: slideUp 0.2s ease;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px max(24px, env(safe-area-inset-bottom));
+    width: 100%; max-width: 460px;
+    max-height: 92vh; overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    animation: slideUp 0.25s ease;
   }
   @keyframes slideUp {
-    from { opacity: 0; transform: translateY(16px); }
+    from { opacity: 0; transform: translateY(24px); }
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  .hp-modal-header { margin-bottom: 20px; }
+  /* drag handle */
+  .hp-modal-handle {
+    width: 36px; height: 4px; border-radius: 2px;
+    background: ${C.border}; margin: 0 auto 18px; display: block;
+  }
+
+  .hp-modal-header { margin-bottom: 16px; }
   .hp-modal-title { font-size: 17px; font-weight: 700; color: ${C.text}; letter-spacing: -0.3px; margin-bottom: 2px; }
   .hp-modal-sub { font-size: 13px; color: ${C.muted}; }
 
   .hp-summary {
     background: ${C.bg}; border: 1px solid ${C.border};
-    border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 18px;
   }
-  .hp-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
+  .hp-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; gap: 8px; }
   .hp-summary-row:not(:last-child) { border-bottom: 1px solid ${C.border}; padding-bottom: 8px; margin-bottom: 3px; }
-  .hp-summary-label { font-size: 12px; color: ${C.muted}; }
-  .hp-summary-value { font-size: 12px; font-weight: 600; color: ${C.text}; }
+  .hp-summary-label { font-size: 12px; color: ${C.muted}; flex-shrink: 0; }
+  .hp-summary-value { font-size: 12px; font-weight: 600; color: ${C.text}; text-align: right; }
   .hp-summary-value.amount { font-size: 16px; font-weight: 700; color: ${C.accent}; font-family: 'DM Mono', monospace; }
 
   .hp-field-label { font-size: 12px; font-weight: 600; color: ${C.muted}; display: block; margin-bottom: 7px; }
   .hp-field-input {
-    width: 100%; padding: 11px 14px; background: ${C.bg};
+    width: 100%; padding: 13px 14px; background: ${C.bg};
     border: 1px solid ${C.border}; border-radius: 10px;
-    font-size: 14px; color: ${C.text}; outline: none;
-    font-family: 'DM Sans', inherit; transition: border-color 0.15s; margin-bottom: 20px;
+    font-size: 16px; color: ${C.text}; outline: none;
+    font-family: 'DM Sans', inherit; transition: border-color 0.15s; margin-bottom: 18px;
+    -webkit-appearance: none; min-height: 50px;
   }
   .hp-field-input:focus { border-color: ${C.accent}; }
   .hp-field-input::placeholder { color: ${C.muted}; }
 
-  /* OTP input — large centered digits */
   .hp-otp-input {
     width: 100%; padding: 16px 14px; background: ${C.bg};
     border: 1px solid ${C.border}; border-radius: 10px;
@@ -232,32 +292,34 @@ const styles = `
     outline: none; font-family: 'DM Mono', monospace;
     transition: border-color 0.15s; margin-bottom: 8px;
     text-align: center; letter-spacing: 10px;
+    -webkit-appearance: none; min-height: 64px;
   }
   .hp-otp-input:focus { border-color: ${C.accent}; }
   .hp-otp-input::placeholder { color: ${C.subtle}; font-size: 20px; letter-spacing: 6px; }
 
   .hp-otp-hint {
-    font-size: 12px; color: ${C.muted}; text-align: center;
-    margin-bottom: 20px; line-height: 1.5;
+    font-size: 13px; color: ${C.muted}; text-align: center;
+    margin-bottom: 18px; line-height: 1.5;
   }
   .hp-otp-hint strong { color: ${C.text}; }
 
   .hp-resend {
     background: none; border: none; color: ${C.accent};
-    font-size: 12px; font-weight: 600; cursor: pointer;
+    font-size: 13px; font-weight: 600; cursor: pointer;
     font-family: 'DM Sans', inherit; padding: 0;
     text-decoration: underline; margin-top: 12px;
     display: block; text-align: center; width: 100%;
+    min-height: 44px; display: flex; align-items: center; justify-content: center;
   }
   .hp-resend:disabled { color: ${C.muted}; text-decoration: none; cursor: not-allowed; }
 
   .hp-step-indicator {
-    display: flex; align-items: center; gap: 6px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 6px; margin-bottom: 16px;
   }
   .hp-step {
     display: flex; align-items: center; justify-content: center;
     width: 22px; height: 22px; border-radius: 50%;
-    font-size: 11px; font-weight: 700;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
   }
   .hp-step.done { background: ${C.accent}; color: #fff; }
   .hp-step.active { background: ${C.accentDim}; border: 1.5px solid ${C.accent}; color: ${C.accent}; }
@@ -265,25 +327,27 @@ const styles = `
   .hp-step-line { flex: 1; height: 1px; background: ${C.border}; }
   .hp-step-line.done { background: ${C.accent}; }
 
-  .hp-alert { border-radius: 10px; padding: 11px 14px; font-size: 13px; margin-bottom: 16px; font-weight: 500; }
+  .hp-alert { border-radius: 10px; padding: 11px 14px; font-size: 13px; margin-bottom: 14px; font-weight: 500; line-height: 1.5; }
   .hp-alert.error { background: #2d141430; border: 1px solid ${C.error}50; color: ${C.error}; }
   .hp-alert.success { background: #052e1630; border: 1px solid #16a34a50; color: ${C.green}; }
 
   .hp-modal-actions { display: flex; gap: 10px; }
 
   .hp-btn-cancel {
-    flex: 1; padding: 11px; border-radius: 10px;
+    flex: 1; padding: 14px; border-radius: 10px;
     border: 1px solid ${C.border}; background: transparent;
-    font-size: 13px; font-weight: 600; color: ${C.muted};
+    font-size: 14px; font-weight: 600; color: ${C.muted};
     cursor: pointer; font-family: 'DM Sans', inherit; transition: all 0.15s;
+    min-height: 50px;
   }
   .hp-btn-cancel:hover { background: ${C.surface}; color: ${C.text}; }
 
   .hp-btn-pay {
-    flex: 2; padding: 11px; border-radius: 10px; border: none;
-    background: ${C.accent}; font-size: 13px; font-weight: 600; color: #fff;
+    flex: 2; padding: 14px; border-radius: 10px; border: none;
+    background: ${C.accent}; font-size: 14px; font-weight: 600; color: #fff;
     cursor: pointer; font-family: 'DM Sans', inherit; transition: all 0.15s;
     display: flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 50px;
   }
   .hp-btn-pay:hover:not(:disabled) { background: ${C.accentHover}; }
   .hp-btn-pay:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -295,12 +359,61 @@ const styles = `
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  @media (max-width: 600px) {
+  /* ── RESPONSIVE BREAKPOINTS ── */
+
+  /* Medium screens — tablets */
+  @media (max-width: 768px) {
     .hp-nav { padding: 0 16px; }
-    .hp-main { padding: 24px 16px; }
+    .hp-main { padding: 22px 16px; }
     .hp-title { font-size: 20px; }
-    .hp-filters { flex-direction: column; }
-    .hp-input { width: 100% !important; }
+
+    /* hide desktop nav links, show hamburger */
+    .hp-nav-links { display: none; }
+    .hp-hamburger { display: flex; }
+
+    /* desktop avatar/logout in nav hidden — moved to drawer */
+    .hp-nav-avatar-desktop { display: none; }
+    .hp-nav-logout-desktop { display: none; }
+
+    .hp-filters { flex-direction: column; gap: 8px; }
+    .hp-input { width: 100% !important; font-size: 16px; }
+
+    .hp-grid { grid-template-columns: 1fr; gap: 12px; }
+
+    .hp-card { padding: 16px; }
+    .hp-card-title { font-size: 14px; }
+    .hp-card-desc { font-size: 13px; }
+    .hp-price { font-size: 18px; }
+  }
+
+  /* Small phones */
+  @media (max-width: 400px) {
+    .hp-nav { padding: 0 12px; height: 56px; }
+    .hp-logo-text { font-size: 14px; }
+
+    .hp-main { padding: 18px 12px; }
+    .hp-title { font-size: 18px; }
+    .hp-subtitle { font-size: 13px; }
+
+    .hp-stat-pill { font-size: 11px; padding: 4px 10px; }
+
+    .hp-card { padding: 14px; border-radius: 14px; }
+    .hp-card-footer { flex-wrap: wrap; }
+    .hp-pay-btn { width: 100%; justify-content: center; }
+
+    .hp-modal { padding: 20px 16px max(20px, env(safe-area-inset-bottom)); }
+    .hp-modal-title { font-size: 16px; }
+    .hp-otp-input { font-size: 24px; letter-spacing: 8px; }
+  }
+
+  /* Large screens — restore centered desktop layout */
+  @media (min-width: 769px) {
+    .hp-drawer { display: none !important; }
+    .hp-overlay { align-items: center; }
+    .hp-modal { border-radius: 20px; max-height: 88vh; }
+    .hp-modal-handle { display: none; }
+    .hp-nav { padding: 0 32px; }
+    .hp-main { padding: 36px 32px; }
   }
 `;
 
@@ -316,12 +429,13 @@ export default function StudentHandouts() {
   const [paying,       setPaying]       = useState(false);
   const [error,        setError]        = useState("");
   const [success,      setSuccess]      = useState("");
+  const [drawerOpen,   setDrawerOpen]   = useState(false);
 
   // OTP state
-  const [step,         setStep]         = useState("momo"); // "momo" | "otp" | "success"
+  const [step,         setStep]         = useState("momo");
   const [otp,          setOtp]          = useState("");
-  const [reference,  setReference]  = useState("");
-  const [paymentId,  setPaymentId]  = useState("");
+  const [reference,    setReference]    = useState("");
+  const [paymentId,    setPaymentId]    = useState("");
   const [submittingOtp, setSubmittingOtp] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
 
@@ -354,6 +468,7 @@ export default function StudentHandouts() {
     setOtp("");
     setReference("");
     setShowModal(true);
+    setDrawerOpen(false);
   }
 
   function closeModal() {
@@ -365,13 +480,11 @@ export default function StudentHandouts() {
     setSuccess("");
   }
 
-  // mask phone number for display e.g. 024*****67
   function maskPhone(phone) {
     if (!phone || phone.length < 4) return phone;
     return phone.slice(0, 3) + "*".repeat(phone.length - 5) + phone.slice(-2);
   }
 
-  // Step 1 — initiate payment
   async function handlePay() {
     if (!momoNumber.trim()) { setError("Please enter your MoMo number."); return; }
     setPaying(true);
@@ -386,16 +499,12 @@ export default function StudentHandouts() {
       setReference(ref);
       setPaymentId(res.data?.payment_id);
 
-
       if (nextStep === "send_otp") {
-        // SMS OTP flow — show OTP input
         setStep("otp");
         startResendCooldown();
       } else if (nextStep === "success") {
-        // instant success (unlikely but handle it)
         setStep("success");
       } else {
-        // fallback — assume OTP needed
         setStep("otp");
         startResendCooldown();
       }
@@ -411,39 +520,33 @@ export default function StudentHandouts() {
     }
   }
 
-
-
-
   async function pollPaymentStatus(ref) {
-  setError("OTP submitted. Waiting for confirmation...");
-  let attempts = 0;
-  const maxAttempts = 10;
+    setError("OTP submitted. Waiting for confirmation...");
+    let attempts = 0;
+    const maxAttempts = 10;
 
-  const interval = setInterval(async () => {
-    attempts++;
-    try {
-      const res = await api.get(`/payments/${ref}/status/`);
-      const paymentStatus = res.data?.status;
+    const interval = setInterval(async () => {
+      attempts++;
+      try {
+        const res = await api.get(`/payments/${ref}/status/`);
+        const paymentStatus = res.data?.status;
 
-      if (paymentStatus === "successful") {
+        if (paymentStatus === "successful") {
+          clearInterval(interval);
+          setStep("success");
+        } else if (paymentStatus === "failed") {
+          clearInterval(interval);
+          setError("Payment failed. Please try again.");
+        } else if (attempts >= maxAttempts) {
+          clearInterval(interval);
+          setError("Payment is taking longer than expected. Check My Payments for status.");
+        }
+      } catch (err) {
         clearInterval(interval);
-        setStep("success");
-      } else if (paymentStatus === "failed") {
-        clearInterval(interval);
-        setError("Payment failed. Please try again.");
-      } else if (attempts >= maxAttempts) {
-        clearInterval(interval);
-        setError("Payment is taking longer than expected. Check My Payments for status.");
       }
-    } catch (err) {
-      clearInterval(interval);
-    }
-  }, 3000);
-}
+    }, 3000);
+  }
 
-
-
-  // Step 2 — submit OTP
   async function handleSubmitOtp() {
     if (!otp.trim() || otp.length < 4) { setError("Please enter the OTP from your SMS."); return; }
     setSubmittingOtp(true);
@@ -453,8 +556,6 @@ export default function StudentHandouts() {
         otp,
         reference,
       });
-      const msg = res.data?.message || "";
-     // Replace with:
       const msg = res.data?.message || "";
       if (msg.includes("approved") || msg.includes("success")) {
         setStep("success");
@@ -473,7 +574,6 @@ export default function StudentHandouts() {
     }
   }
 
-  // Resend cooldown timer
   function startResendCooldown() {
     setResendCooldown(30);
     const id = setInterval(() => {
@@ -524,7 +624,6 @@ export default function StudentHandouts() {
     return `${h.stock} in stock`;
   }
 
-  // Step indicator helper
   function StepIndicator() {
     const s1 = step === "momo" ? "active" : "done";
     const s2 = step === "otp" ? "active" : step === "success" ? "done" : "pending";
@@ -547,18 +646,63 @@ export default function StudentHandouts() {
       <style>{styles}</style>
       <div className="hp-page">
 
+        {/* ── NAV ── */}
         <nav className="hp-nav">
           <div className="hp-logo">
             <div className="hp-logo-icon">H</div>
             <span className="hp-logo-text">Handout Pay</span>
           </div>
+
+          {/* Desktop nav links */}
           <div className="hp-nav-links">
             <span className="hp-nav-link active" onClick={() => navigate("/student/handouts")}>Handouts</span>
             <span className="hp-nav-link" onClick={() => navigate("/student/payments")}>My Payments</span>
-            <div className="hp-avatar">{user.name?.[0]?.toUpperCase()}</div>
-            <button className="hp-logout" onClick={handleLogout}>Logout</button>
+            <div className="hp-avatar hp-nav-avatar-desktop">{user.name?.[0]?.toUpperCase()}</div>
+            <button className="hp-logout hp-nav-logout-desktop" onClick={handleLogout}>Logout</button>
+          </div>
+
+          {/* Mobile right: avatar + hamburger */}
+          <div className="hp-nav-right" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div className="hp-avatar" style={{ display: "none" }} id="mobile-avatar">
+              {user.name?.[0]?.toUpperCase()}
+            </div>
+            <button
+              className="hp-hamburger"
+              onClick={() => setDrawerOpen(o => !o)}
+              aria-label="Menu"
+            >
+              <span style={drawerOpen ? { transform: "rotate(45deg) translate(4px, 4px)" } : {}} />
+              <span style={drawerOpen ? { opacity: 0 } : {}} />
+              <span style={drawerOpen ? { transform: "rotate(-45deg) translate(4px, -4px)" } : {}} />
+            </button>
           </div>
         </nav>
+
+        {/* Mobile Drawer */}
+        <div className={`hp-drawer ${drawerOpen ? "open" : ""}`}>
+          <span className="hp-nav-link active" onClick={() => { navigate("/student/handouts"); setDrawerOpen(false); }}>
+            Handouts
+          </span>
+          <span className="hp-nav-link" onClick={() => { navigate("/student/payments"); setDrawerOpen(false); }}>
+            My Payments
+          </span>
+          <div className="hp-drawer-footer">
+            <div className="hp-avatar">{user.name?.[0]?.toUpperCase()}</div>
+            <span style={{ fontSize: 13, color: C.muted, flex: 1 }}>{user.name || "Student"}</span>
+            <button className="hp-logout" onClick={handleLogout}>Logout</button>
+          </div>
+        </div>
+
+        {/* Drawer backdrop */}
+        {drawerOpen && (
+          <div
+            onClick={() => setDrawerOpen(false)}
+            style={{
+              position: "fixed", inset: 0, zIndex: 38,
+              background: "rgba(0,0,0,0.4)",
+            }}
+          />
+        )}
 
         <div className="hp-main">
           <div className="hp-header">
@@ -569,14 +713,14 @@ export default function StudentHandouts() {
           <div className="hp-filters">
             <input
               className="hp-input"
-              style={{ width: 280 }}
+              style={{ flex: 1, minWidth: 0 }}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search handouts..."
             />
             <select
               className="hp-input"
-              style={{ width: 220 }}
+              style={{ flex: 1, minWidth: 0 }}
               value={filterCourse}
               onChange={(e) => setFilterCourse(e.target.value)}
             >
@@ -636,6 +780,7 @@ export default function StudentHandouts() {
         {showModal && selected && (
           <div className="hp-overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
             <div className="hp-modal">
+              <div className="hp-modal-handle" />
 
               {/* ── Step: MoMo number ── */}
               {step === "momo" && (
@@ -664,6 +809,8 @@ export default function StudentHandouts() {
                     value={momoNumber}
                     onChange={(e) => setMomoNumber(e.target.value)}
                     placeholder="e.g. 0241234567"
+                    type="tel"
+                    inputMode="numeric"
                   />
                   <div className="hp-modal-actions">
                     <button className="hp-btn-cancel" onClick={closeModal}>Cancel</button>
@@ -695,6 +842,8 @@ export default function StudentHandouts() {
                     placeholder="······"
                     maxLength={6}
                     autoFocus
+                    type="tel"
+                    inputMode="numeric"
                   />
                   <div className="hp-modal-actions">
                     <button className="hp-btn-cancel" onClick={closeModal}>Cancel</button>

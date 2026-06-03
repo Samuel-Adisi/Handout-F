@@ -33,7 +33,7 @@ export default function Login() {
   const [error, setError]     = useState("");
   const [loading, setLoading] = useState(false);
 
-   async function handleSubmit(e) {
+  async function handleSubmit(e) {
     if (e && e.preventDefault) e.preventDefault();
     setLoading(true);
     setError("");
@@ -49,7 +49,7 @@ export default function Login() {
       if (data.role === "rep")     navigate("/rep/dashboard");
       if (data.role === "student") navigate("/student/handouts");
       if (data.role === "admin")   navigate("/rep/dashboard");
-  } catch (err) {
+    } catch (err) {
       const status = err.response?.status;
       if (status === 401 || status === 400) {
         setError("Invalid student ID or password.");
@@ -58,8 +58,7 @@ export default function Login() {
       } else {
         setError("Something went wrong. Please try again.");
       }
-    }
-finally {
+    } finally {
       setLoading(false);
     }
   }
@@ -73,6 +72,15 @@ finally {
           border-color: #6366f1 !important;
           box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
         }
+
+        /* Tighten vertical padding on short / small screens */
+        @media (max-width: 480px) {
+          .login-card { padding: 32px 20px !important; }
+        }
+        @media (max-height: 640px) {
+          .login-card { padding: 24px 20px !important; }
+          .login-logo-wrap { margin-bottom: 20px !important; }
+        }
       `}</style>
 
       <div style={{
@@ -82,7 +90,9 @@ finally {
         alignItems: "center",
         justifyContent: "center",
         fontFamily: "system-ui, sans-serif",
-        padding: "0",
+        /* Safe-area insets for notched phones */
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
       }}>
         <div style={{
           background: C.surface,
@@ -93,13 +103,16 @@ finally {
           alignItems: "center",
           justifyContent: "center",
         }}>
-          <div style={{
-            width: "100%",
-            maxWidth: 420,
-            padding: "40px 24px",
-          }}>
+          <div
+            className="login-card"
+            style={{
+              width: "100%",
+              maxWidth: 420,
+              padding: "40px 24px",
+            }}
+          >
             {/* Logo */}
-            <div style={{ textAlign: "center", marginBottom: 32 }}>
+            <div className="login-logo-wrap" style={{ textAlign: "center", marginBottom: 32 }}>
               <div style={{
                 width: 52, height: 52, borderRadius: 14,
                 background: C.accent, margin: "0 auto 14px",
@@ -110,88 +123,91 @@ finally {
               <div style={{ fontSize: 22, fontWeight: 700, color: C.text }}>Handout Pay</div>
               <div style={{ fontSize: 13, color: C.muted, marginTop: 6 }}>Sign in to your account</div>
             </div>
-             <form onSubmit={handleSubmit}> 
-            {error && (
-              <div style={{
-                background: "#2d1414", border: `1px solid ${C.error}`,
-                borderRadius: 10, padding: "12px 16px",
-                fontSize: 13, color: C.error, marginBottom: 20,
-                display: "flex", alignItems: "center", gap: 8,
-              }}>
-                <span>⚠️</span> {error}
-               
+
+            <form onSubmit={handleSubmit}>
+              {error && (
+                <div style={{
+                  background: "#2d1414", border: `1px solid ${C.error}`,
+                  borderRadius: 10, padding: "12px 16px",
+                  fontSize: 13, color: C.error, marginBottom: 20,
+                  display: "flex", alignItems: "center", gap: 8,
+                }}>
+                  <span>⚠️</span> {error}
+                </div>
+              )}
+
+              <div style={{ marginBottom: 18 }}>
+                <label style={{
+                  fontSize: 12, fontWeight: 600, color: C.muted,
+                  display: "block", marginBottom: 8, letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                }}>
+                  Student ID
+                </label>
+                <input
+                  value={form.student_id}
+                  onChange={(e) => setForm({ ...form, student_id: e.target.value })}
+                  placeholder="e.g. STU/2024/001"
+                  autoComplete="username"
+                  /* font-size 16px prevents iOS Safari auto-zoom on focus */
+                  style={{
+                    width: "100%", padding: "13px 16px",
+                    background: C.bg, border: `1px solid ${C.border}`,
+                    borderRadius: 10, fontSize: 16, color: C.text,
+                    outline: "none", fontFamily: "inherit",
+                    transition: "border-color 0.2s, box-shadow 0.2s",
+                  }}
+                />
               </div>
-            )}
 
-            <div style={{ marginBottom: 18 }}>
-              <label style={{
-                fontSize: 12, fontWeight: 600, color: C.muted,
-                display: "block", marginBottom: 8, letterSpacing: "0.04em",
-                textTransform: "uppercase",
-              }}>
-                Student ID
-              </label>
-              <input
-                value={form.student_id}
-                onChange={(e) => setForm({ ...form, student_id: e.target.value })}
-                placeholder="e.g. STU/2024/001"
-                autoComplete="username"
-                style={{
-                  width: "100%", padding: "13px 16px",
-                  background: C.bg, border: `1px solid ${C.border}`,
-                  borderRadius: 10, fontSize: 15, color: C.text,
-                  outline: "none", fontFamily: "inherit",
-                  transition: "border-color 0.2s, box-shadow 0.2s",
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: 28 }}>
-              <label style={{
-                fontSize: 12, fontWeight: 600, color: C.muted,
-                display: "block", marginBottom: 8, letterSpacing: "0.04em",
-                textTransform: "uppercase",
-              }}>
-                Password
-              </label>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                placeholder="••••••••"
-                autoComplete="current-password"
-                style={{
-                  width: "100%", padding: "13px 16px",
-                  background: C.bg, border: `1px solid ${C.border}`,
-                  borderRadius: 10, fontSize: 15, color: C.text,
-                  outline: "none", fontFamily: "inherit",
-                  transition: "border-color 0.2s, box-shadow 0.2s",
-                }}
-              />
-            </div>
+              <div style={{ marginBottom: 28 }}>
+                <label style={{
+                  fontSize: 12, fontWeight: 600, color: C.muted,
+                  display: "block", marginBottom: 8, letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                }}>
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  /* font-size 16px prevents iOS Safari auto-zoom on focus */
+                  style={{
+                    width: "100%", padding: "13px 16px",
+                    background: C.bg, border: `1px solid ${C.border}`,
+                    borderRadius: 10, fontSize: 16, color: C.text,
+                    outline: "none", fontFamily: "inherit",
+                    transition: "border-color 0.2s, box-shadow 0.2s",
+                  }}
+                />
+              </div>
 
               <button
-              type="submit"
-               disabled={loading}
-              style={{
-                width: "100%", padding: "14px",
-                background: loading ? "#4a4db5" : C.accent,
-                color: "#fff", border: "none", borderRadius: 10,
-                fontSize: 15, fontWeight: 600,
-                cursor: loading ? "not-allowed" : "pointer",
-                fontFamily: "inherit",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "background 0.2s",
-                boxShadow: loading ? "none" : "0 4px 14px rgba(99,102,241,0.35)",
-              }}
-            >
-              {loading && <Spinner />}
-              {loading ? "Signing in..." : "Sign In"}
-            </button>
-
+                type="submit"
+                disabled={loading}
+                style={{
+                  width: "100%", padding: "14px",
+                  background: loading ? "#4a4db5" : C.accent,
+                  color: "#fff", border: "none", borderRadius: 10,
+                  fontSize: 15, fontWeight: 600,
+                  cursor: loading ? "not-allowed" : "pointer",
+                  fontFamily: "inherit",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "background 0.2s",
+                  boxShadow: loading ? "none" : "0 4px 14px rgba(99,102,241,0.35)",
+                  /* Prevent double-tap zoom on mobile */
+                  touchAction: "manipulation",
+                }}
+              >
+                {loading && <Spinner />}
+                {loading ? "Signing in..." : "Sign In"}
+              </button>
             </form>
-              <div style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: C.muted }}>
 
+            <div style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: C.muted }}>
               Course rep?{" "}
               <span
                 onClick={() => navigate("/register/rep")}
