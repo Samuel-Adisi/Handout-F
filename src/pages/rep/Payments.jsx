@@ -309,7 +309,7 @@ export default function Payments() {
 
   async function load() {
     try {
-      const { data } = await api.get("/payments/my/");
+      const { data } = await api.get("/payments/rep/");
       setPayments(data);
       const successful = data.filter((p) => p.status === "successful");
       const pending    = data.filter((p) => p.status === "pending");
